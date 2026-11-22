@@ -20,7 +20,7 @@ Supports instant UI localization in **English (`EN`)**, **Russian (`RU`)**, and 
 - **Multi-Language Interface (`EN | RU | UZ`):**
   - Instant header language switcher (**English**, **Русский**, **O‘zbekcha**) persisted in `settings.json`.
 - **Native Antigravity Design & Hot Reload:**
-  - Uses Antigravity's native theme variables and typography (**Google Sans Flex** & **Google Sans Code**), adapting automatically to dark and light themes.
+  - Uses Antigravity's native theme variables and typography (**Google Sans Flex** & **Google Sans Code**), adapting automatically to dark and light themes .
 
 ---
 

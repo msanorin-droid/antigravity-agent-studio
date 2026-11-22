@@ -2,7 +2,7 @@
   "name": "agent-studio",
   "displayName": "Agent Studio (Hermes UI)",
   "version": "1.0.0",
-  "description": "Визуальная панель управления агентами, участниками роя, их характером, инструментами и матрицей скиллов в стиле Hermes.",
+  "description": "Visual side-pane dashboard for managing AI agents, active Swarm members, personas, tool permissions, and an interactive Agent x Skills Matrix (EN/RU/UZ).",
   "logo": "assets/logo.svg",
   "author": {
     "name": "Azamat Babaev (msanorin-droid)",
@@ -11,8 +11,8 @@
   "homepage": "https://github.com/msanorin-droid/antigravity-agent-studio",
   "repository": "https://github.com/msanorin-droid/antigravity-agent-studio",
   "suggestedPrompts": [
-    "Открой панель Agent Studio в боковой панели",
-    "Покажи каких агентов и какие скиллы я настроил в Agent Studio",
-    "Запусти рой из агентов, настроенных в Agent Studio"
+    "Open the Agent Studio panel in the side pane",
+    "Show which agents and skills are configured in Agent Studio",
+    "Start a swarm using the agents configured in Agent Studio"
   ]
 }
