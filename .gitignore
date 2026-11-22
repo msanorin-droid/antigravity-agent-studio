@@ -1,0 +1,5 @@
+.DS_Store
+node_modules/
+*.log
+hidden_agents.json
+settings.json

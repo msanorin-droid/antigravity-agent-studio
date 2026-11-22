@@ -1,0 +1,18 @@
+{
+  "name": "agent-studio",
+  "displayName": "Agent Studio (Hermes UI)",
+  "version": "1.0.0",
+  "description": "Визуальная панель управления агентами, участниками роя, их характером, инструментами и матрицей скиллов в стиле Hermes.",
+  "logo": "assets/logo.svg",
+  "author": {
+    "name": "Azamat Babaev (msanorin-droid)",
+    "url": "https://github.com/msanorin-droid"
+  },
+  "homepage": "https://github.com/msanorin-droid/antigravity-agent-studio",
+  "repository": "https://github.com/msanorin-droid/antigravity-agent-studio",
+  "suggestedPrompts": [
+    "Открой панель Agent Studio в боковой панели",
+    "Покажи каких агентов и какие скиллы я настроил в Agent Studio",
+    "Запусти рой из агентов, настроенных в Agent Studio"
+  ]
+}

@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Studio</title>
+  <script src="/preload.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:ROND,opsz,slnt,wdth,wght@0..100,6..144,-10..0,92..100,100..1000&family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&display=swap">
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: var(--background, #0d1117);
+      --card: var(--card, #161b22);
+      --fg: var(--foreground, #e6edf3);
+      --fg-2: var(--secondary-foreground, #c9d1d9);
+      --fg-muted: var(--muted-foreground, #8b949e);
+      --fg-faint: var(--placeholder, #6e7681);
+      --primary: var(--primary, #38bdf8);
+      --primary-fg: var(--primary-foreground, #090d16);
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --purple: #a371f7;
+      --line: color-mix(in srgb, var(--fg) 9%, transparent);
+      --fill: color-mix(in srgb, var(--fg) 5.5%, transparent);
+      --fill-hover: color-mix(in srgb, var(--fg) 9%, transparent);
+      --fill-active: color-mix(in srgb, var(--primary) 14%, transparent);
+      --field: color-mix(in srgb, var(--fg) 4%, transparent);
+      --ring: color-mix(in srgb, var(--primary) 60%, transparent);
+      --font: var(--font-family, "Google Sans Flex", "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+      --mono: var(--editor-font-family, "Google Sans Code", ui-monospace, SFMono-Regular, Menlo, monospace);
+      --r-sm: 6px;
+      --r-md: 8px;
+      --r-lg: 12px;
+    }
+
+    * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--fg) 20%, transparent) transparent; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--fg) 20%, transparent); border-radius: 8px; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font) !important;
+      font-size: 13px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 76px;
+    }
+
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 16px 0;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .brand-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 28%, transparent), color-mix(in srgb, var(--purple) 28%, transparent));
+      border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+      display: grid;
+      place-items: center;
+      color: var(--primary);
+      flex: none;
+    }
+    .brand-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--success) 14%, transparent);
+      color: var(--success);
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      position: relative;
+    }
+    .live-dot::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: inherit;
+      opacity: 0.5;
+      animation: ping 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    }
+    @keyframes ping { 0% { transform: scale(1); opacity: 0.6; } 80%, 100% { transform: scale(2.6); opacity: 0; } }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .lang-switch {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px;
+      border-radius: var(--r-sm);
+      background: var(--fill);
+      border: 1px solid var(--line);
+    }
+    .lang-btn {
+      height: 22px;
+      padding: 0 7px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg-muted);
+      font-size: 11px;
+      font-weight: 600;
+      transition: 0.12s ease;
+    }
+    .lang-btn:hover { color: var(--fg); }
+    .lang-btn.active {
+      background: var(--primary);
+      color: var(--primary-fg);
+    }
+
+    .ghost-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 28px;
+      padding: 0 9px;
+      border-radius: var(--r-sm);
+      border: 1px solid transparent;
+      background: var(--fill);
+      color: var(--fg-2);
+      font-size: 12px;
+      font-weight: 500;
+      transition: 0.14s ease;
+    }
+    .ghost-btn:hover { background: var(--fill-hover); color: var(--fg); }
+    .danger-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 26px;
+      padding: 0 9px;
+      border-radius: var(--r-sm);
+      border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+      background: color-mix(in srgb, var(--danger) 12%, transparent);
+      color: var(--danger);
+      font-size: 11.5px;
+      font-weight: 500;
+      transition: 0.14s ease;
+    }
+    .danger-btn:hover {
+      background: color-mix(in srgb, var(--danger) 22%, transparent);
+      border-color: var(--danger);
+    }
+    .danger-solid-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: var(--r-md);
+      border: 0;
+      background: var(--danger);
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 600;
+      transition: opacity 0.14s ease;
+    }
+    .danger-solid-btn:hover { opacity: 0.9; }
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      justify-content: center;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 20px;
+      margin-top: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 34px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--fg-muted);
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: color 0.14s ease;
+    }
+    .tab:hover { color: var(--fg); }
+    .tab.active { color: var(--fg); }
+    .tab::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 2px;
+      border-radius: 2px 2px 0 0;
+      background: transparent;
+      transition: background-color 0.14s ease;
+    }
+    .tab.active::after { background: var(--primary); }
+    .tab-count {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: var(--fill);
+      color: var(--fg-muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .tab.active .tab-count {
+      background: var(--fill-active);
+      color: var(--primary);
+    }
+
+    .main {
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 14px 16px;
+    }
+    .tab-panel { display: none; animation: fadeIn 0.15s ease-out; }
+    .tab-panel.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+
+    .roster-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .agent-card {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 11px;
+      border-radius: var(--r-md);
+      background: var(--field);
+      border: 1px solid var(--line);
+      text-align: left;
+      transition: all 0.14s ease;
+    }
+    .agent-card:hover {
+      background: var(--fill);
+      border-color: color-mix(in srgb, var(--fg) 18%, transparent);
+    }
+    .agent-card.active {
+      background: var(--fill-active);
+      border-color: color-mix(in srgb, var(--primary) 55%, transparent);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    }
+    .agent-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+      flex: none;
+      background: var(--fill-hover);
+      color: var(--fg);
+      position: relative;
+    }
+    .agent-card.active .agent-avatar {
+      background: var(--primary);
+      color: var(--primary-fg);
+    }
+    .avatar-status {
+      position: absolute;
+      right: -2px;
+      bottom: -2px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--fg-faint);
+      border: 2px solid var(--bg);
+    }
+    .avatar-status.live { background: var(--success); }
+    .agent-meta { min-width: 0; flex: 1; }
+    .agent-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .agent-sub {
+      font-size: 11px;
+      color: var(--fg-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .section {
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--fg-muted);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 460px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .field { margin-bottom: 10px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--fg-muted);
+      margin-bottom: 5px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .input, .select-input, .textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      padding: 7px 10px;
+      color: var(--fg);
+      font-size: 13px;
+      transition: border-color 0.14s ease;
+    }
+    .input:focus, .select-input:focus, .textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .textarea {
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .textarea.mono {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .presets-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .preset-pill {
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--fg-muted);
+      font-size: 11.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: 0.12s ease;
+    }
+    .preset-pill:hover {
+      color: var(--fg);
+      border-color: var(--primary);
+      background: var(--fill-active);
+    }
+    .preset-manage-btn {
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px dashed color-mix(in srgb, var(--primary) 50%, var(--line));
+      background: color-mix(in srgb, var(--primary) 8%, transparent);
+      color: var(--primary);
+      font-size: 11.5px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: 0.12s ease;
+    }
+    .preset-manage-btn:hover {
+      background: var(--fill-active);
+      border-style: solid;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 6px;
+    }
+    .tool-tile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: var(--r-md);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      cursor: pointer;
+      user-select: none;
+      transition: 0.12s ease;
+    }
+    .tool-tile:hover { border-color: color-mix(in srgb, var(--fg) 22%, transparent); }
+    .tool-tile.on {
+      background: var(--fill-active);
+      border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+    }
+    .tool-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--fg-2);
+    }
+    .tool-tile.on .tool-name { color: var(--fg); }
+
+    .switch-track {
+      position: relative;
+      flex: none;
+      width: 28px;
+      height: 16px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--fg) 18%, transparent);
+      transition: background-color 0.15s ease;
+      cursor: pointer;
+    }
+    .switch-track::after {
+      content: "";
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--bg);
+      transition: transform 0.15s ease;
+    }
+    .on .switch-track,
+    .switch-track.on {
+      background: var(--primary);
+    }
+    .on .switch-track::after,
+    .switch-track.on::after {
+      transform: translateX(12px);
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 34px;
+      padding: 0 11px;
+      border-radius: var(--r-md);
+      background: var(--bg);
+      border: 1px solid var(--line);
+    }
+    .search-box:focus-within { border-color: var(--primary); }
+    .search-box input {
+      flex: 1;
+      border: 0;
+      outline: none;
+      background: transparent;
+      font-size: 12.5px;
+      color: var(--fg);
+    }
+    .cat-pills {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .cat-pills::-webkit-scrollbar { display: none; }
+    .cat-pill {
+      flex: none;
+      height: 25px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 0;
+      background: var(--bg);
+      color: var(--fg-muted);
+      font-size: 11.5px;
+      font-weight: 500;
+      transition: 0.12s ease;
+    }
+    .cat-pill:hover { color: var(--fg); background: var(--fill-hover); }
+    .cat-pill.active {
+      background: var(--fg);
+      color: var(--bg);
+    }
+
+    .skills-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .skill-card {
+      flex: none;
+      border-radius: var(--r-md);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      transition: border-color 0.12s ease, background-color 0.12s ease;
+    }
+    .skill-card:hover { border-color: color-mix(in srgb, var(--fg) 22%, transparent); }
+    .skill-card.on {
+      background: color-mix(in srgb, var(--primary) 7%, var(--bg));
+      border-color: color-mix(in srgb, var(--primary) 42%, transparent);
+    }
+    .skill-card.expanded {
+      border-color: var(--primary);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+    }
+    .skill-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 12px;
+    }
+    .skill-main {
+      min-width: 0;
+      flex: 1;
+      cursor: pointer;
+    }
+    .skill-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .skill-id {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .tag {
+      font-size: 10.5px;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: var(--fill);
+      color: var(--fg-muted);
+      font-weight: 500;
+    }
+    .tag.global { color: var(--success); background: color-mix(in srgb, var(--success) 13%, transparent); }
+    .tag.plugin { color: var(--purple); background: color-mix(in srgb, var(--purple) 13%, transparent); }
+    .tag.project { color: var(--warning); background: color-mix(in srgb, var(--warning) 13%, transparent); }
+    .skill-desc {
+      font-size: 12px;
+      color: var(--fg-muted);
+      margin-top: 4px;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .skill-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: none;
+      padding-top: 1px;
+    }
+    .inspect-btn {
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--field);
+      color: var(--fg-muted);
+      font-size: 11px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: 0.12s ease;
+    }
+    .inspect-btn:hover, .skill-card.expanded .inspect-btn {
+      color: var(--fg);
+      border-color: var(--primary);
+      background: var(--fill-active);
+    }
+
+    .skill-drawer {
+      border-top: 1px solid var(--line);
+      background: color-mix(in srgb, var(--field) 75%, var(--bg));
+      padding: 12px;
+      border-radius: 0 0 var(--r-md) var(--r-md);
+      animation: fadeIn 0.14s ease-out;
+    }
+    .drawer-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .drawer-path {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--fg-muted);
+      word-break: break-all;
+      flex: 1;
+      min-width: 180px;
+    }
+    .drawer-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .matrix-wrap {
+      overflow-x: auto;
+      background: var(--field);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+    }
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .matrix-table th, .matrix-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+    }
+    .matrix-table th {
+      background: color-mix(in srgb, var(--bg) 60%, var(--field));
+      color: var(--fg-muted);
+      font-weight: 600;
+      font-size: 11.5px;
+      position: sticky;
+      top: 0;
+    }
+    .matrix-table td.cell-toggle {
+      text-align: center;
+      width: 74px;
+    }
+    .matrix-table tr:hover td { background: var(--fill); }
+    .matrix-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: transparent;
+      display: inline-grid;
+      place-items: center;
+      transition: 0.12s ease;
+    }
+    .matrix-btn.on {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--primary-fg);
+      font-weight: 700;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 35;
+      background: color-mix(in srgb, var(--bg) 90%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .primary-btn {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: var(--r-md);
+      border: 0;
+      background: var(--primary);
+      color: var(--primary-fg);
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.14s ease;
+      white-space: nowrap;
+    }
+    .primary-btn:hover { opacity: 0.9; }
+    .primary-btn.sm {
+      height: 28px;
+      padding: 0 11px;
+      font-size: 12px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: none;
+      place-items: center;
+      padding: 16px;
+    }
+    .modal-overlay.open {
+      display: grid;
+      animation: fadeIn 0.14s ease-out;
+    }
+    .confirm-dialog {
+      width: min(92vw, 390px);
+      background: var(--card);
+      border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--line));
+      border-radius: var(--r-lg);
+      padding: 16px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+    }
+    .confirm-title {
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .confirm-body {
+      margin: 0 0 16px;
+      font-size: 12.5px;
+      color: var(--fg-muted);
+      line-height: 1.5;
+    }
+    .confirm-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .presets-window {
+      width: min(96vw, 680px);
+      max-height: 88vh;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55);
+      overflow: hidden;
+    }
+    .presets-win-head {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg);
+    }
+    .presets-win-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .presets-win-body {
+      padding: 14px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .preset-editor-card {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      padding: 12px;
+      flex: none;
+    }
+    .preset-editor-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .presets-win-foot {
+      padding: 11px 16px;
+      border-top: 1px solid var(--line);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 62px;
+      transform: translateX(-50%);
+      z-index: 95;
+      padding: 8px 14px;
+      border-radius: var(--r-md);
+      background: var(--fg);
+      color: var(--bg);
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+      display: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-top">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="5.5" cy="5.5" r="2.5"/><path d="M2 13c0-2.2 1.6-3.5 3.5-3.5S9 10.8 9 13"/>
+            <path d="M11 4.5h3M11 8h3M11 11.5h2"/>
+          </svg>
+        </div>
+        <h1 class="brand-title">Agent Studio</h1>
+        <span id="swarm-pill" class="live-pill" style="display:none">
+          <span class="live-dot"></span>
+          <span id="swarm-pill-text"></span>
+        </span>
+      </div>
+      <div class="header-actions">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" class="lang-btn active" data-lang="ru">RU</button>
+          <button type="button" class="lang-btn" data-lang="en">EN</button>
+          <button type="button" class="lang-btn" data-lang="uz">UZ</button>
+        </div>
+        <button type="button" class="ghost-btn" id="btn-open-presets-top"></button>
+        <button type="button" class="ghost-btn" id="btn-add-agent"></button>
+        <button type="button" class="ghost-btn icon-btn" id="btn-reload" title="Reload">↻</button>
+      </div>
+    </div>
+
+    <nav class="tabs" role="tablist">
+      <button type="button" class="tab active" data-tab="profile">
+        <span id="tab-lbl-profile"></span> <span id="cnt-agents" class="tab-count">0</span>
+      </button>
+      <button type="button" class="tab" data-tab="matrix">
+        <span id="tab-lbl-matrix"></span> <span id="cnt-skills" class="tab-count">0</span>
+      </button>
+      <button type="button" class="tab" data-tab="create-skill">
+        <span id="tab-lbl-create"></span>
+      </button>
+    </nav>
+  </header>
+
+  <main class="main">
+    <!-- TAB 1 -->
+    <section id="panel-profile" class="tab-panel active">
+      <div id="roster-strip" class="roster-strip"></div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title"><span id="lbl-sec-profile"></span></h2>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="agent-origin-badge" class="tag plugin"></span>
+            <button type="button" class="danger-btn" id="btn-delete-agent"></button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <div class="field-label"><span id="lbl-agent-id"></span></div>
+            <input type="text" class="input" id="f-id" placeholder="coder">
+          </div>
+          <div class="field">
+            <div class="field-label"><span id="lbl-agent-model"></span></div>
+            <select class="select-input" id="f-model">
+              <option value="gemini-3.8-flash-medium">Gemini 3.8 Flash (Medium)</option>
+              <option value="gemini-4-neon-medium">Gemini 4 Neon (Medium)</option>
+              <option value="gemini-4-argon-medium">Gemini 4 Argon (Pro)</option>
+              <option value="claude-sonnet-5-5-medium">Claude Sonnet 5.5</option>
+              <option value="claude-opus-5-5-medium">Claude Opus 5.5</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-label"><span id="lbl-agent-role"></span></div>
+          <input type="text" class="input" id="f-role">
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span id="lbl-agent-persona"></span>
+            <button type="button" class="ghost-btn" id="btn-save-as-preset" style="height:22px; font-size:11px; padding:0 8px;"></button>
+          </div>
+          <textarea class="textarea" id="f-persona"></textarea>
+          <div class="presets-bar" id="presets-bar"></div>
+        </div>
+      </div>
+
+      <!-- Tools -->
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title" id="lbl-sec-tools"></h2>
+          <span id="tools-summary" style="font-size:11.5px; color:var(--fg-muted);"></span>
+        </div>
+        <div id="tools-grid" class="tools-grid"></div>
+      </div>
+
+      <!-- Skills -->
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title">
+            <span id="lbl-sec-skills"></span> (<span id="agent-skills-count">0</span>)
+          </h2>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="lbl-skill-click-hint" style="font-size:11px; color:var(--fg-muted);"></span>
+            <button type="button" class="ghost-btn" id="btn-clear-skills" style="height:24px; font-size:11px;"></button>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <label class="search-box">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="color:var(--fg-muted)">
+              <circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/>
+            </svg>
+            <input type="search" id="f-skill-search">
+          </label>
+          <div class="cat-pills" id="cat-pills">
+            <button type="button" class="cat-pill active" data-cat="all" id="cat-all"></button>
+            <button type="button" class="cat-pill" data-cat="assigned" id="cat-assigned"></button>
+            <button type="button" class="cat-pill" data-cat="global" id="cat-global"></button>
+            <button type="button" class="cat-pill" data-cat="project" id="cat-project"></button>
+            <button type="button" class="cat-pill" data-cat="plugin" id="cat-plugin"></button>
+            <button type="button" class="cat-pill" data-cat="builtin" id="cat-builtin"></button>
+          </div>
+        </div>
+
+        <div id="skills-stack" class="skills-stack"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: MATRIX -->
+    <section id="panel-matrix" class="tab-panel">
+      <div id="lbl-matrix-hint" style="margin-bottom:10px; font-size:12px; color:var(--fg-muted);"></div>
+      <div class="matrix-wrap">
+        <table class="matrix-table" id="matrix-table"></table>
+      </div>
+    </section>
+
+    <!-- TAB 3: CREATE SKILL -->
+    <section id="panel-create-skill" class="tab-panel">
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title" id="lbl-ns-title"></h2>
+          <span class="tag global">~/.gemini/config/skills/</span>
+        </div>
+        <div class="field">
+          <div class="field-label"><span id="lbl-ns-name"></span></div>
+          <input type="text" class="input" id="ns-name" placeholder="python-clean-architecture">
+        </div>
+        <div class="field">
+          <div class="field-label"><span id="lbl-ns-desc"></span></div>
+          <input type="text" class="input" id="ns-desc">
+        </div>
+        <div class="field">
+          <div class="field-label"><span id="lbl-ns-body"></span></div>
+          <textarea class="textarea mono" id="ns-body" style="min-height:150px;"></textarea>
+        </div>
+        <button type="button" class="primary-btn" id="btn-create-skill"></button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Presets Window -->
+  <div id="presets-overlay" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="presets-window">
+      <div class="presets-win-head">
+        <h3 class="presets-win-title" id="lbl-presets-win-title"></h3>
+        <button type="button" class="ghost-btn icon-btn" id="presets-close">✕</button>
+      </div>
+      <div class="presets-win-body" id="presets-editor-list"></div>
+      <div class="presets-win-foot">
+        <button type="button" class="ghost-btn" id="btn-add-preset"></button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="ghost-btn" id="presets-cancel"></button>
+          <button type="button" class="primary-btn" id="presets-save"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Dialog -->
+  <div id="confirm-overlay" class="modal-overlay" role="dialog" aria-modal="true" style="z-index:90;">
+    <div class="confirm-dialog">
+      <h3 class="confirm-title" id="confirm-title"></h3>
+      <p class="confirm-body" id="confirm-body"></p>
+      <div class="confirm-actions">
+        <button type="button" class="ghost-btn" id="confirm-cancel"></button>
+        <button type="button" class="danger-solid-btn" id="confirm-ok"></button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bottom-bar">
+    <button type="button" class="ghost-btn" id="btn-copy-cmd"></button>
+    <button type="button" class="primary-btn" id="btn-save"></button>
+  </footer>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+    (() => {
+      const I18N = {
+        ru: {
+          presetsBtn: '⚙️ Шаблоны',
+          addAgentBtn: '+ Агент',
+          tabProfile: 'Команда и Характер',
+          tabMatrix: 'Матрица скиллов',
+          tabCreateSkill: '+ Новый скилл',
+          secProfile: 'Профиль и Характер',
+          deleteAgentBtn: '🗑️ Удалить агента',
+          agentId: 'Имя агента (@роль)',
+          agentModel: 'Модель агента',
+          agentRole: 'Специализация (кратко)',
+          agentRolePh: 'Ведущий разработчик Python и архитектуры',
+          agentPersona: 'Системный промпт / Характер',
+          agentPersonaPh: 'Задайте характер, тон ответов, правила работы и запреты...',
+          saveAsPreset: '+ Сохранить текущие поля как кнопку-шаблон',
+          customizePresets: '⚙️ Настроить кнопки',
+          secTools: 'Доступы к инструментам (Tools)',
+          toolsEnabled: (n, total) => `${n} из ${total} включено`,
+          tools: {
+            read_file: 'Чтение файлов',
+            write_file: 'Запись файлов',
+            edit_file: 'Правка кода',
+            run_command: 'Терминал',
+            manage_task: 'Фоновые задачи',
+            search_web: 'Веб-поиск'
+          },
+          secSkills: 'Навыки этого агента',
+          skillClickHint: 'Клик по скиллу → просмотр и правка',
+          resetBtn: 'Сбросить',
+          searchSkillPh: 'Поиск скилла по названию или описанию...',
+          catAll: 'Все',
+          catAssigned: 'Активные',
+          catGlobal: 'Глобальные',
+          catProject: 'Проектные',
+          catPlugin: 'Из плагинов',
+          catBuiltin: 'Встроенные',
+          btnTextEdit: '✏️ Текст',
+          btnCollapse: 'Свернуть',
+          skillDescLabel: 'Описание (условие активации скилла)',
+          skillBodyLabel: 'Полный текст инструкции (SKILL.md)',
+          deleteSkillBtn: '🗑️ Удалить скилл',
+          saveSkillBtn: '💾 Сохранить скилл',
+          saveSkillTextBtn: '💾 Сохранить текст скилла',
+          builtinNote: 'Встроенный скилл: сохраняется как глобальное переопределение в ~/.gemini/config/skills/',
+          directNote: 'Сохраняется напрямую в файл SKILL.md (или кнопкой «Сохранить профиль» внизу)',
+          matrixHint: 'Единый обзор всех ботов и их навыков. Кликайте по ячейкам, чтобы включать или отключать скиллы, или нажмите на название скилла, чтобы открыть и отредактировать его текст.',
+          matrixColSkill: 'Скилл (клик → текст)',
+          nsTitle: 'Создание нового глобального скилла',
+          nsName: 'ID скилла (латиницей через дефис)',
+          nsDesc: 'Описание (когда агенту активировать скилл)',
+          nsDescPh: 'Используй при проектировании и написании модулей на Python',
+          nsBody: 'Пошаговая инструкция (SKILL.md)',
+          nsBodyPh: '# Правила работы\n1. Проверяй типы входных аргументов.\n2. Покрывай граничные значения тестами.',
+          nsSubmit: '✨ Создать скилл и привязать к текущему агенту',
+          copyCmdBtn: '📋 Команда для чата',
+          saveProfileBtn: '💾 Сохранить профиль',
+          presetsWinTitle: '⚙️ Настройка кнопок-шаблонов (Специализация и Характер)',
+          addPresetBtn: '➕ Добавить новую кнопку-шаблон',
+          cancelBtn: 'Отмена',
+          savePresetsBtn: '💾 Сохранить шаблоны',
+          confirmDeleteBtn: '🗑️ Да, удалить',
+          presetCardTitle: (i, lbl) => `Кнопка #${i}: ${lbl || 'Без названия'}`,
+          deletePresetBtn: '🗑️ Удалить кнопку',
+          presetLabelField: 'Название кнопки (с эмодзи)',
+          presetRoleField: 'Специализация (подставляется в поле)',
+          presetPersonaField: 'Системный промпт / Характер',
+          badgeSwarm: (t) => `🐝 В рое этого чата (${t})`,
+          badgeTemplate: '🌍 Глобальный шаблон',
+          cardSwarmSub: (n) => `🐝 Рой чата · ${n} ск.`,
+          cardTemplateSub: (n) => `🌍 Шаблон · ${n} ск.`,
+          confirmDelAgentTitle: (id) => `⚠️ Удалить агента @${id}?`,
+          confirmDelAgentBody: (id) => `Профиль агента @${id} и его привязки скиллов будут удалены. Вы уверены?`,
+          confirmDelSkillTitle: (nm) => `⚠️ Удалить скилл "${nm}"?`,
+          confirmDelSkillBody: (fd) => `Папка глобального скилла (~/.gemini/config/skills/${fd}) и файл SKILL.md будут безвозвратно удалены.`,
+          confirmDelPresetTitle: (lbl) => `⚠️ Удалить кнопку «${lbl}»?`,
+          confirmDelPresetBody: 'Этот шаблон специализации и характера будет удалён из списка быстрых кнопок.',
+          toastPresetApplied: (lbl) => `Применён шаблон «${lbl}»`,
+          toastPresetsSaved: '✅ Кнопки-шаблоны сохранены',
+          toastAgentSaved: (id, n) => `✅ Сохранён профиль @${id} (${n} скилл.)`,
+          toastAgentDeleted: (id) => `🗑️ Агент @${id} удалён`,
+          toastSkillSaved: (p) => `✅ Файл скилла обновлён: ${p}`,
+          toastSkillDeleted: (nm) => `🗑️ Скилл "${nm}" удалён`,
+          toastSkillCreated: (nm, id) => `✨ Скилл "${nm}" создан и включён для @${id}`,
+          toastCopied: '📋 Команда для чата скопирована в буфер обмена',
+          toastSynced: 'Данные синхронизированы'
+        },
+        en: {
+          presetsBtn: '⚙️ Presets',
+          addAgentBtn: '+ Agent',
+          tabProfile: 'Team & Persona',
+          tabMatrix: 'Skills Matrix',
+          tabCreateSkill: '+ New Skill',
+          secProfile: 'Profile & Persona',
+          deleteAgentBtn: '🗑️ Delete Agent',
+          agentId: 'Agent Name (@role)',
+          agentModel: 'Agent Model',
+          agentRole: 'Specialization (short)',
+          agentRolePh: 'Lead Python & Architecture Developer',
+          agentPersona: 'System Prompt / Persona',
+          agentPersonaPh: 'Define character, tone, workflow rules, and restrictions...',
+          saveAsPreset: '+ Save current fields as preset button',
+          customizePresets: '⚙️ Customize Buttons',
+          secTools: 'Tool Permissions (Tools)',
+          toolsEnabled: (n, total) => `${n} of ${total} enabled`,
+          tools: {
+            read_file: 'Read Files',
+            write_file: 'Write Files',
+            edit_file: 'Edit Code',
+            run_command: 'Terminal',
+            manage_task: 'Background Tasks',
+            search_web: 'Web Search'
+          },
+          secSkills: 'Agent Skills',
+          skillClickHint: 'Click skill → view & edit',
+          resetBtn: 'Reset',
+          searchSkillPh: 'Search skill by name or description...',
+          catAll: 'All',
+          catAssigned: 'Active',
+          catGlobal: 'Global',
+          catProject: 'Project',
+          catPlugin: 'Plugins',
+          catBuiltin: 'Built-in',
+          btnTextEdit: '✏️ Text',
+          btnCollapse: 'Collapse',
+          skillDescLabel: 'Description (when the agent should activate this skill)',
+          skillBodyLabel: 'Full Instruction Text (SKILL.md)',
+          deleteSkillBtn: '🗑️ Delete Skill',
+          saveSkillBtn: '💾 Save Skill',
+          saveSkillTextBtn: '💾 Save Skill Text',
+          builtinNote: 'Built-in skill: saved as a global override in ~/.gemini/config/skills/',
+          directNote: 'Saved directly to SKILL.md (or via "Save Profile" below)',
+          matrixHint: 'Unified overview of all agents and skills. Click cells to toggle skills, or click a skill name to view and edit its text.',
+          matrixColSkill: 'Skill (click → text)',
+          nsTitle: 'Create New Global Skill',
+          nsName: 'Skill ID (kebab-case)',
+          nsDesc: 'Description (trigger condition)',
+          nsDescPh: 'Use when designing and writing Python modules',
+          nsBody: 'Step-by-step Instructions (SKILL.md)',
+          nsBodyPh: '# Workflow Rules\n1. Validate input argument types.\n2. Cover edge cases with unit tests.',
+          nsSubmit: '✨ Create Skill & Assign to Current Agent',
+          copyCmdBtn: '📋 Copy Chat Command',
+          saveProfileBtn: '💾 Save Profile',
+          presetsWinTitle: '⚙️ Customize Preset Buttons (Specialization & Persona)',
+          addPresetBtn: '➕ Add New Preset Button',
+          cancelBtn: 'Cancel',
+          savePresetsBtn: '💾 Save Presets',
+          confirmDeleteBtn: '🗑️ Yes, Delete',
+          presetCardTitle: (i, lbl) => `Button #${i}: ${lbl || 'Untitled'}`,
+          deletePresetBtn: '🗑️ Delete Button',
+          presetLabelField: 'Button Label (with emoji)',
+          presetRoleField: 'Specialization (fills role field)',
+          presetPersonaField: 'System Prompt / Persona',
+          badgeSwarm: (t) => `🐝 Active in Chat Swarm (${t})`,
+          badgeTemplate: '🌍 Global Template',
+          cardSwarmSub: (n) => `🐝 Chat Swarm · ${n} sk.`,
+          cardTemplateSub: (n) => `🌍 Template · ${n} sk.`,
+          confirmDelAgentTitle: (id) => `⚠️ Delete agent @${id}?`,
+          confirmDelAgentBody: (id) => `Agent profile @${id} and its skill bindings will be deleted. Are you sure?`,
+          confirmDelSkillTitle: (nm) => `⚠️ Delete skill "${nm}"?`,
+          confirmDelSkillBody: (fd) => `Global skill folder (~/.gemini/config/skills/${fd}) and SKILL.md will be permanently deleted.`,
+          confirmDelPresetTitle: (lbl) => `⚠️ Delete button "${lbl}"?`,
+          confirmDelPresetBody: 'This specialization and persona preset will be removed from quick buttons.',
+          toastPresetApplied: (lbl) => `Applied preset "${lbl}"`,
+          toastPresetsSaved: '✅ Preset buttons saved',
+          toastAgentSaved: (id, n) => `✅ Saved profile @${id} (${n} skills)`,
+          toastAgentDeleted: (id) => `🗑️ Agent @${id} deleted`,
+          toastSkillSaved: (p) => `✅ Skill file updated: ${p}`,
+          toastSkillDeleted: (nm) => `🗑️ Skill "${nm}" deleted`,
+          toastSkillCreated: (nm, id) => `✨ Skill "${nm}" created & enabled for @${id}`,
+          toastCopied: '📋 Chat command copied to clipboard',
+          toastSynced: 'Data synchronized'
+        },
+        uz: {
+          presetsBtn: '⚙️ Shablonlar',
+          addAgentBtn: '+ Agent',
+          tabProfile: 'Jamoa va Xarakter',
+          tabMatrix: 'Ko‘nikmalar matritsasi',
+          tabCreateSkill: '+ Yangi ko‘nikma',
+          secProfile: 'Profil va Xarakter',
+          deleteAgentBtn: '🗑️ Agentni o‘chirish',
+          agentId: 'Agent nomi (@rol)',
+          agentModel: 'Agent modeli',
+          agentRole: 'Mutaxassisligi (qisqacha)',
+          agentRolePh: 'Yetakchi Python va arxitektura dasturchisi',
+          agentPersona: 'Tizim prompti / Xarakter',
+          agentPersonaPh: 'Agent xarakteri, javob uslubi, qoidalar va cheklovlarni kiriting...',
+          saveAsPreset: '+ Joriy maydonlarni shablon tugma sifatida saqlash',
+          customizePresets: '⚙️ Tugmalarni sozlash',
+          secTools: 'Uskunalarga ruxsatlar (Tools)',
+          toolsEnabled: (n, total) => `${total} tadan ${n} tasi yoqilgan`,
+          tools: {
+            read_file: 'Fayllarni o‘qish',
+            write_file: 'Fayl yaratish',
+            edit_file: 'Kodni tahrirlash',
+            run_command: 'Terminal',
+            manage_task: 'Fon vazifalari',
+            search_web: 'Veb-qidiruv'
+          },
+          secSkills: 'Ushbu agent ko‘nikmalari',
+          skillClickHint: 'Ko‘nikmani bosing → ko‘rish va tahrirlash',
+          resetBtn: 'Tozalash',
+          searchSkillPh: 'Ko‘nikmani nomi yoki tavsifi bo‘yicha qidirish...',
+          catAll: 'Barchasi',
+          catAssigned: 'Faol',
+          catGlobal: 'Global',
+          catProject: 'Loyiha',
+          catPlugin: 'Plaginlar',
+          catBuiltin: 'O‘rnatilgan',
+          btnTextEdit: '✏️ Matn',
+          btnCollapse: 'Yopish',
+          skillDescLabel: 'Tavsif (agent ko‘nikmani qachon ishga tushirishi sharti)',
+          skillBodyLabel: 'To‘liq yo‘riqnoma matni (SKILL.md)',
+          deleteSkillBtn: '🗑️ Ko‘nikmani o‘chirish',
+          saveSkillBtn: '💾 Ko‘nikmani saqlash',
+          saveSkillTextBtn: '💾 Ko‘nikma matnini saqlash',
+          builtinNote: 'O‘rnatilgan ko‘nikma: ~/.gemini/config/skills/ ichida global qayta yozish sifatida saqlanadi',
+          directNote: 'To‘g‘ridan-to‘g‘ri SKILL.md fayliga saqlanadi',
+          matrixHint: 'Barcha agentlar va ularning ko‘nikmalari jadvali. Katakchalarni bosib ko‘nikmalarni yoqing/o‘chiring yoki ko‘nikma nomini bosib matnini tahrirlang.',
+          matrixColSkill: 'Ko‘nikma (bosish → matn)',
+          nsTitle: 'Yangi global ko‘nikma yaratish',
+          nsName: 'Ko‘nikma ID (lotin harflari va defis bilan)',
+          nsDesc: 'Tavsif (qachon faollashishi kerak)',
+          nsDescPh: 'Python modullarini loyihalash va yozishda foydalaning',
+          nsBody: 'Qadam-baqadam yo‘riqnoma (SKILL.md)',
+          nsBodyPh: '# Ishlash qoidalari\n1. Kiruvchi argument turlarini tekshiring.\n2. Chegara qiymatlarni testlar bilan qamrab oling.',
+          nsSubmit: '✨ Ko‘nikma yaratish va joriy agentga biriktirish',
+          copyCmdBtn: '📋 Chat uchun buyruq',
+          saveProfileBtn: '💾 Profilni saqlash',
+          presetsWinTitle: '⚙️ Shablon tugmalarni sozlash (Mutaxassislik va Xarakter)',
+          addPresetBtn: '➕ Yangi shablon tugma qo‘shish',
+          cancelBtn: 'Bekor qilish',
+          savePresetsBtn: '💾 Shablonlarni saqlash',
+          confirmDeleteBtn: '🗑️ Ha, o‘chirish',
+          presetCardTitle: (i, lbl) => `Tugma #${i}: ${lbl || 'Nomsiz'}`,
+          deletePresetBtn: '🗑️ Tugmani o‘chirish',
+          presetLabelField: 'Tugma nomi (emodzi bilan)',
+          presetRoleField: 'Mutaxassisligi (maydonga tushadi)',
+          presetPersonaField: 'Tizim prompti / Xarakter',
+          badgeSwarm: (t) => `🐝 Ushbu chat galasida (${t})`,
+          badgeTemplate: '🌍 Global shablon',
+          cardSwarmSub: (n) => `🐝 Chat galasi · ${n} ko‘n.`,
+          cardTemplateSub: (n) => `🌍 Shablon · ${n} ko‘n.`,
+          confirmDelAgentTitle: (id) => `⚠️ @${id} agentini o‘chirasizmi?`,
+          confirmDelAgentBody: (id) => `@${id} agent profili va uning ko‘nikmalar bog‘lamalari o‘chiriladi. Ishonchingiz komilmi?`,
+          confirmDelSkillTitle: (nm) => `⚠️ "${nm}" ko‘nikmasini o‘chirasizmi?`,
+          confirmDelSkillBody: (fd) => `Global ko‘nikma papkasi (~/.gemini/config/skills/${fd}) va SKILL.md fayli butunlay o‘chiriladi.`,
+          confirmDelPresetTitle: (lbl) => `⚠️ «${lbl}» tugmasini o‘chirasizmi?`,
+          confirmDelPresetBody: 'Ushbu mutaxassislik va xarakter shabloni tezkor tugmalar ro‘yxatidan o‘chiriladi.',
+          toastPresetApplied: (lbl) => `«${lbl}» shabloni qo‘llandi`,
+          toastPresetsSaved: '✅ Shablon tugmalar saqlandi',
+          toastAgentSaved: (id, n) => `✅ @${id} profili saqlandi (${n} ko‘nikma)`,
+          toastAgentDeleted: (id) => `🗑️ @${id} agenti o‘chirildi`,
+          toastSkillSaved: (p) => `✅ Ko‘nikma fayli yangilandi: ${p}`,
+          toastSkillDeleted: (nm) => `🗑️ "${nm}" ko‘nikmasi o‘chirildi`,
+          toastSkillCreated: (nm, id) => `✨ "${nm}" ko‘nikmasi yaratildi va @${id} uchun yoqildi`,
+          toastCopied: '📋 Chat buyrug‘i vaqtinchalik xotiraga nusxalandi',
+          toastSynced: 'Ma’lumotlar yangilandi'
+        }
+      };
+
+      const TOOL_IDS = ['read_file', 'write_file', 'edit_file', 'run_command', 'manage_task', 'search_web'];
+
+      const state = {
+        lang: 'ru',
+        agents: [],
+        skills: [],
+        presets: [],
+        draftPresets: [],
+        latestSwarm: null,
+        selectedId: null,
+        expandedSkill: null,
+        activeSkillGetter: null,
+        cat: 'all',
+        tab: 'profile'
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const t = () => I18N[state.lang] || I18N.ru;
+      const params = new URLSearchParams(location.search);
+      const currentConvId = () => window.sidecar?.conversationId || params.get('conversationId') || '';
+
+      function toBase64(obj) {
+        const bytes = new TextEncoder().encode(JSON.stringify(obj));
+        let bin = '';
+        for (const b of bytes) bin += String.fromCharCode(b);
+        return btoa(bin);
+      }
+
+      async function apiGet(path) {
+        try {
+          const f = window.sidecar?.fetch ? window.sidecar.fetch.bind(window.sidecar) : fetch;
+          const res = await f(path, { method: 'GET' });
+          if (!res.ok) return { ok: false, status: res.status };
+          return await res.json();
+        } catch (err) {
+          return { ok: false, error: String(err) };
+        }
+      }
+
+      function askConfirm({ title, body, okLabel, onConfirm }) {
+        const tr = t();
+        $('confirm-title').textContent = title;
+        $('confirm-body').textContent = body;
+        $('confirm-cancel').textContent = tr.cancelBtn;
+        $('confirm-ok').textContent = okLabel || tr.confirmDeleteBtn;
+        const overlay = $('confirm-overlay');
+        overlay.classList.add('open');
+
+        const close = () => overlay.classList.remove('open');
+        $('confirm-cancel').onclick = close;
+        overlay.onclick = (e) => {
+          if (e.target === overlay) close();
+        };
+        $('confirm-ok').onclick = async () => {
+          close();
+          await onConfirm();
+        };
+      }
+
+      function toast(msg) {
+        const el = $('toast');
+        el.textContent = msg;
+        el.style.display = 'block';
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => { el.style.display = 'none'; }, 3800);
+      }
+
+      function currentAgent() {
+        return state.agents.find((a) => a.id === state.selectedId) || state.agents[0] || null;
+      }
+
+      function syncInputsToState() {
+        const ag = currentAgent();
+        if (!ag) return;
+        ag.id = $('f-id').value.trim() || ag.id;
+        ag.model = $('f-model').value;
+        ag.roleTitle = $('f-role').value.trim();
+        ag.persona = $('f-persona').value;
+      }
+
+      function applyStaticTranslations() {
+        const tr = t();
+        document.documentElement.lang = state.lang;
+        document.querySelectorAll('.lang-btn').forEach((b) => {
+          b.classList.toggle('active', b.getAttribute('data-lang') === state.lang);
+        });
+
+        $('btn-open-presets-top').textContent = tr.presetsBtn;
+        $('btn-add-agent').textContent = tr.addAgentBtn;
+        $('tab-lbl-profile').textContent = tr.tabProfile;
+        $('tab-lbl-matrix').textContent = tr.tabMatrix;
+        $('tab-lbl-create').textContent = tr.tabCreateSkill;
+        $('lbl-sec-profile').textContent = tr.secProfile;
+        $('btn-delete-agent').textContent = tr.deleteAgentBtn;
+        $('lbl-agent-id').textContent = tr.agentId;
+        $('lbl-agent-model').textContent = tr.agentModel;
+        $('lbl-agent-role').textContent = tr.agentRole;
+        $('f-role').placeholder = tr.agentRolePh;
+        $('lbl-agent-persona').textContent = tr.agentPersona;
+        $('f-persona').placeholder = tr.agentPersonaPh;
+        $('btn-save-as-preset').textContent = tr.saveAsPreset;
+        $('lbl-sec-tools').textContent = tr.secTools;
+        $('lbl-sec-skills').textContent = tr.secSkills;
+        $('lbl-skill-click-hint').textContent = tr.skillClickHint;
+        $('btn-clear-skills').textContent = tr.resetBtn;
+        $('f-skill-search').placeholder = tr.searchSkillPh;
+        $('cat-all').textContent = tr.catAll;
+        $('cat-assigned').textContent = tr.catAssigned;
+        $('cat-global').textContent = tr.catGlobal;
+        $('cat-project').textContent = tr.catProject;
+        $('cat-plugin').textContent = tr.catPlugin;
+        $('cat-builtin').textContent = tr.catBuiltin;
+        $('lbl-matrix-hint').textContent = tr.matrixHint;
+        $('lbl-ns-title').textContent = tr.nsTitle;
+        $('lbl-ns-name').textContent = tr.nsName;
+        $('lbl-ns-desc').textContent = tr.nsDesc;
+        $('ns-desc').placeholder = tr.nsDescPh;
+        $('lbl-ns-body').textContent = tr.nsBody;
+        $('ns-body').placeholder = tr.nsBodyPh;
+        $('btn-create-skill').textContent = tr.nsSubmit;
+        $('btn-copy-cmd').textContent = tr.copyCmdBtn;
+        $('btn-save').textContent = tr.saveProfileBtn;
+        $('lbl-presets-win-title').textContent = tr.presetsWinTitle;
+        $('btn-add-preset').textContent = tr.addPresetBtn;
+        $('presets-cancel').textContent = tr.cancelBtn;
+        $('presets-save').textContent = tr.savePresetsBtn;
+      }
+
+      function renderPresetsBar() {
+        const tr = t();
+        const bar = $('presets-bar');
+        bar.innerHTML = '';
+
+        for (const pr of state.presets) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'preset-pill';
+          btn.textContent = pr.label;
+          btn.title = pr.roleTitle ? `${pr.roleTitle}\n\n${pr.persona}` : pr.persona;
+          btn.onclick = () => {
+            if (pr.roleTitle) $('f-role').value = pr.roleTitle;
+            $('f-persona').value = pr.persona || '';
+            syncInputsToState();
+            toast(tr.toastPresetApplied(pr.label));
+          };
+          bar.appendChild(btn);
+        }
+
+        const manageBtn = document.createElement('button');
+        manageBtn.type = 'button';
+        manageBtn.className = 'preset-manage-btn';
+        manageBtn.textContent = tr.customizePresets;
+        manageBtn.onclick = openPresetsModal;
+        bar.appendChild(manageBtn);
+      }
+
+      function openPresetsModal() {
+        state.draftPresets = state.presets.map((p) => ({ ...p }));
+        renderPresetsModalList();
+        $('presets-overlay').classList.add('open');
+      }
+
+      function closePresetsModal() {
+        $('presets-overlay').classList.remove('open');
+      }
+
+      function renderPresetsModalList() {
+        const tr = t();
+        const wrap = $('presets-editor-list');
+        wrap.innerHTML = '';
+
+        state.draftPresets.forEach((pr, idx) => {
+          const card = document.createElement('div');
+          card.className = 'preset-editor-card';
+
+          const top = document.createElement('div');
+          top.className = 'preset-editor-top';
+          top.innerHTML = `<span style="font-weight:600; font-size:12.5px; color:var(--primary);">${tr.presetCardTitle(idx + 1, pr.label)}</span>`;
+
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'danger-btn';
+          delBtn.textContent = tr.deletePresetBtn;
+          delBtn.onclick = () => {
+            askConfirm({
+              title: tr.confirmDelPresetTitle(pr.label),
+              body: tr.confirmDelPresetBody,
+              onConfirm: () => {
+                state.draftPresets.splice(idx, 1);
+                renderPresetsModalList();
+              }
+            });
+          };
+          top.appendChild(delBtn);
+          card.appendChild(top);
+
+          const grid = document.createElement('div');
+          grid.className = 'grid-2';
+
+          const fLabel = document.createElement('div');
+          fLabel.className = 'field';
+          fLabel.innerHTML = `<div class="field-label"><span>${tr.presetLabelField}</span></div>`;
+          const inpLabel = document.createElement('input');
+          inpLabel.type = 'text';
+          inpLabel.className = 'input';
+          inpLabel.value = pr.label || '';
+          inpLabel.oninput = () => { pr.label = inpLabel.value; };
+          fLabel.appendChild(inpLabel);
+
+          const fRole = document.createElement('div');
+          fRole.className = 'field';
+          fRole.innerHTML = `<div class="field-label"><span>${tr.presetRoleField}</span></div>`;
+          const inpRole = document.createElement('input');
+          inpRole.type = 'text';
+          inpRole.className = 'input';
+          inpRole.value = pr.roleTitle || '';
+          inpRole.oninput = () => { pr.roleTitle = inpRole.value; };
+          fRole.appendChild(inpRole);
+
+          grid.appendChild(fLabel);
+          grid.appendChild(fRole);
+          card.appendChild(grid);
+
+          const fPersona = document.createElement('div');
+          fPersona.className = 'field';
+          fPersona.innerHTML = `<div class="field-label"><span>${tr.presetPersonaField}</span></div>`;
+          const taPersona = document.createElement('textarea');
+          taPersona.className = 'textarea';
+          taPersona.style.minHeight = '76px';
+          taPersona.value = pr.persona || '';
+          taPersona.oninput = () => { pr.persona = taPersona.value; };
+          fPersona.appendChild(taPersona);
+          card.appendChild(fPersona);
+
+          wrap.appendChild(card);
+        });
+      }
+
+      async function persistPresets(newList) {
+        const tr = t();
+        state.presets = newList;
+        renderPresetsBar();
+        const res = await apiGet(`/api/save-presets?payload=${encodeURIComponent(toBase64({ presets: newList }))}`);
+        if (res && res.ok) {
+          state.presets = res.presets;
+          renderPresetsBar();
+        }
+        toast(tr.toastPresetsSaved);
+      }
+
+      $('btn-open-presets-top').onclick = openPresetsModal;
+      $('presets-close').onclick = closePresetsModal;
+      $('presets-cancel').onclick = closePresetsModal;
+      $('presets-overlay').onclick = (e) => {
+        if (e.target === $('presets-overlay')) closePresetsModal();
+      };
+
+      $('btn-add-preset').onclick = () => {
+        state.draftPresets.push({
+          id: `preset-${Date.now()}`,
+          label: `✨ Preset ${state.draftPresets.length + 1}`,
+          roleTitle: '',
+          persona: ''
+        });
+        renderPresetsModalList();
+        const body = $('presets-editor-list');
+        body.scrollTop = body.scrollHeight;
+      };
+
+      $('presets-save').onclick = async () => {
+        const cleaned = state.draftPresets.filter((p) => String(p.label || '').trim());
+        closePresetsModal();
+        await persistPresets(cleaned);
+      };
+
+      $('btn-save-as-preset').onclick = () => {
+        syncInputsToState();
+        const ag = currentAgent();
+        state.draftPresets = state.presets.map((p) => ({ ...p }));
+        state.draftPresets.push({
+          id: `preset-${Date.now()}`,
+          label: `⭐ ${ag?.id || 'Preset'}`,
+          roleTitle: $('f-role').value.trim(),
+          persona: $('f-persona').value.trim()
+        });
+        renderPresetsModalList();
+        $('presets-overlay').classList.add('open');
+        const body = $('presets-editor-list');
+        body.scrollTop = body.scrollHeight;
+      };
+
+      function renderRoster() {
+        const tr = t();
+        const wrap = $('roster-strip');
+        wrap.innerHTML = '';
+        $('cnt-agents').textContent = String(state.agents.length);
+        $('cnt-skills').textContent = String(state.skills.length);
+
+        for (const ag of state.agents) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'agent-card' + (ag.id === state.selectedId ? ' active' : '');
+
+          const av = document.createElement('div');
+          av.className = 'agent-avatar';
+          av.textContent = (ag.id || 'A').slice(0, 2).toUpperCase();
+
+          const dot = document.createElement('span');
+          dot.className = 'avatar-status' + (ag.swarmStatus ? ' live' : '');
+          av.appendChild(dot);
+
+          const meta = document.createElement('div');
+          meta.className = 'agent-meta';
+
+          const nm = document.createElement('div');
+          nm.className = 'agent-name';
+          nm.textContent = `@${ag.id}`;
+
+          const sub = document.createElement('div');
+          sub.className = 'agent-sub';
+          const skCount = (ag.skills || []).length;
+          sub.textContent = ag.swarmStatus ? tr.cardSwarmSub(skCount) : tr.cardTemplateSub(skCount);
+
+          meta.appendChild(nm);
+          meta.appendChild(sub);
+          btn.appendChild(av);
+          btn.appendChild(meta);
+
+          btn.onclick = () => {
+            syncInputsToState();
+            state.selectedId = ag.id;
+            renderAll();
+          };
+          wrap.appendChild(btn);
+        }
+      }
+
+      function renderProfile() {
+        const tr = t();
+        const ag = currentAgent();
+        if (!ag) return;
+        $('f-id').value = ag.id;
+        $('f-model').value = ag.model || 'gemini-3.8-flash-medium';
+        $('f-role').value = ag.roleTitle || '';
+        $('f-persona').value = ag.persona || '';
+        $('agent-origin-badge').textContent = ag.swarmStatus
+          ? tr.badgeSwarm(ag.swarmStatus.swarmTitle)
+          : tr.badgeTemplate;
+
+        const enabledTools = new Set(ag.tools || []);
+        $('tools-summary').textContent = tr.toolsEnabled(enabledTools.size, TOOL_IDS.length);
+        const tg = $('tools-grid');
+        tg.innerHTML = '';
+
+        for (const id of TOOL_IDS) {
+          const isOn = enabledTools.has(id);
+          const tile = document.createElement('div');
+          tile.className = 'tool-tile' + (isOn ? ' on' : '');
+          tile.innerHTML = `<span class="tool-name">${tr.tools[id] || id}</span><span class="switch-track"></span>`;
+          tile.onclick = () => {
+            if (enabledTools.has(id)) enabledTools.delete(id);
+            else enabledTools.add(id);
+            ag.tools = [...enabledTools];
+            renderProfile();
+          };
+          tg.appendChild(tile);
+        }
+      }
+
+      function renderSkillsList() {
+        const tr = t();
+        const ag = currentAgent();
+        if (!ag) return;
+        state.activeSkillGetter = null;
+        const assigned = new Set(ag.skills || []);
+        $('agent-skills-count').textContent = String(assigned.size);
+
+        const q = ($('f-skill-search').value || '').toLowerCase().trim();
+        const stack = $('skills-stack');
+        stack.innerHTML = '';
+
+        const list = state.skills.filter((s) => {
+          if (state.cat === 'assigned' && !assigned.has(s.name)) return false;
+          if (state.cat !== 'all' && state.cat !== 'assigned' && s.category !== state.cat) return false;
+          if (q && !s.name.toLowerCase().includes(q) && !String(s.description).toLowerCase().includes(q)) return false;
+          return true;
+        });
+
+        list.sort((a, b) => (assigned.has(b.name) ? 1 : 0) - (assigned.has(a.name) ? 1 : 0));
+
+        for (const s of list) {
+          const isOn = assigned.has(s.name);
+          const isExpanded = state.expandedSkill === s.name;
+
+          const card = document.createElement('div');
+          card.className = 'skill-card' + (isOn ? ' on' : '') + (isExpanded ? ' expanded' : '');
+
+          const row = document.createElement('div');
+          row.className = 'skill-row';
+
+          const main = document.createElement('div');
+          main.className = 'skill-main';
+
+          const head = document.createElement('div');
+          head.className = 'skill-head';
+
+          const idSpan = document.createElement('span');
+          idSpan.className = 'skill-id';
+          idSpan.textContent = s.name;
+
+          const tag = document.createElement('span');
+          tag.className = `tag ${s.category || ''}`;
+          tag.textContent = s.source;
+
+          head.appendChild(idSpan);
+          head.appendChild(tag);
+
+          const desc = document.createElement('div');
+          desc.className = 'skill-desc';
+          desc.textContent = s.description;
+
+          main.appendChild(head);
+          main.appendChild(desc);
+
+          const toggleExpand = () => {
+            state.expandedSkill = isExpanded ? null : s.name;
+            renderSkillsList();
+          };
+          main.onclick = toggleExpand;
+
+          const actions = document.createElement('div');
+          actions.className = 'skill-actions';
+
+          const editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'inspect-btn';
+          editBtn.textContent = isExpanded ? tr.btnCollapse : tr.btnTextEdit;
+          editBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleExpand();
+          };
+
+          const sw = document.createElement('span');
+          sw.className = 'switch-track' + (isOn ? ' on' : '');
+          sw.onclick = (e) => {
+            e.stopPropagation();
+            if (assigned.has(s.name)) assigned.delete(s.name);
+            else assigned.add(s.name);
+            ag.skills = [...assigned];
+            renderRoster();
+            renderSkillsList();
+            renderMatrix();
+          };
+
+          actions.appendChild(editBtn);
+          actions.appendChild(sw);
+
+          row.appendChild(main);
+          row.appendChild(actions);
+          card.appendChild(row);
+
+          if (isExpanded) {
+            const drawer = document.createElement('div');
+            drawer.className = 'skill-drawer';
+
+            const fDesc = document.createElement('div');
+            fDesc.className = 'field';
+            fDesc.innerHTML = `<div class="field-label"><span>${tr.skillDescLabel}</span></div>`;
+            const inpDesc = document.createElement('input');
+            inpDesc.type = 'text';
+            inpDesc.className = 'input';
+            inpDesc.value = s.description || '';
+            fDesc.appendChild(inpDesc);
+
+            const fBody = document.createElement('div');
+            fBody.className = 'field';
+            fBody.innerHTML = `<div class="field-label"><span>${tr.skillBodyLabel}</span></div>`;
+            const taBody = document.createElement('textarea');
+            taBody.className = 'textarea mono';
+            taBody.style.minHeight = '210px';
+            taBody.value = s.body || '';
+            fBody.appendChild(taBody);
+
+            const doSaveSkill = async () => {
+              const payload = toBase64({
+                name: s.name,
+                folder: s.folder || s.name,
+                path: s.path,
+                category: s.category,
+                description: inpDesc.value.trim(),
+                body: taBody.value
+              });
+              const res = await apiGet(`/api/save-skill?payload=${encodeURIComponent(payload)}`);
+              if (res && res.ok) {
+                toast(tr.toastSkillSaved(res.savedPath));
+                await loadState();
+              }
+            };
+
+            state.activeSkillGetter = () => ({
+              name: s.name,
+              folder: s.folder || s.name,
+              path: s.path,
+              category: s.category,
+              description: inpDesc.value.trim(),
+              body: taBody.value
+            });
+
+            const topBar = document.createElement('div');
+            topBar.className = 'drawer-top-bar';
+            const pathSpan = document.createElement('div');
+            pathSpan.className = 'drawer-path';
+            pathSpan.textContent = `📄 ${s.path || ''}`;
+
+            const topBtns = document.createElement('div');
+            topBtns.style.display = 'flex';
+            topBtns.style.gap = '6px';
+
+            if (s.category === 'global') {
+              const delSkBtn = document.createElement('button');
+              delSkBtn.type = 'button';
+              delSkBtn.className = 'danger-btn';
+              delSkBtn.textContent = tr.deleteSkillBtn;
+              delSkBtn.onclick = () => {
+                askConfirm({
+                  title: tr.confirmDelSkillTitle(s.name),
+                  body: tr.confirmDelSkillBody(s.folder || s.name),
+                  onConfirm: async () => {
+                    const res = await apiGet(`/api/delete-skill?payload=${encodeURIComponent(toBase64({ folder: s.folder || s.name }))}`);
+                    if (res && res.ok) {
+                      state.expandedSkill = null;
+                      toast(tr.toastSkillDeleted(s.name));
+                      await loadState();
+                    }
+                  }
+                });
+              };
+              topBtns.appendChild(delSkBtn);
+            }
+
+            const topSaveBtn = document.createElement('button');
+            topSaveBtn.type = 'button';
+            topSaveBtn.className = 'primary-btn sm';
+            topSaveBtn.textContent = tr.saveSkillBtn;
+            topSaveBtn.onclick = doSaveSkill;
+            topBtns.appendChild(topSaveBtn);
+
+            topBar.appendChild(pathSpan);
+            topBar.appendChild(topBtns);
+
+            drawer.appendChild(topBar);
+            drawer.appendChild(fDesc);
+            drawer.appendChild(fBody);
+
+            const foot = document.createElement('div');
+            foot.className = 'drawer-foot';
+
+            const note = document.createElement('span');
+            note.style.fontSize = '11px';
+            note.style.color = 'var(--fg-muted)';
+            note.textContent = s.category === 'builtin' ? tr.builtinNote : tr.directNote;
+
+            const botSaveBtn = document.createElement('button');
+            botSaveBtn.type = 'button';
+            botSaveBtn.className = 'primary-btn sm';
+            botSaveBtn.textContent = tr.saveSkillTextBtn;
+            botSaveBtn.onclick = doSaveSkill;
+
+            foot.appendChild(note);
+            foot.appendChild(botSaveBtn);
+            drawer.appendChild(foot);
+            card.appendChild(drawer);
+          }
+
+          stack.appendChild(card);
+        }
+      }
+
+      function renderMatrix() {
+        const tr = t();
+        const tbl = $('matrix-table');
+        tbl.innerHTML = '';
+        if (!state.agents.length || !state.skills.length) return;
+
+        const thead = document.createElement('thead');
+        const htr = document.createElement('tr');
+        const th0 = document.createElement('th');
+        th0.textContent = tr.matrixColSkill;
+        htr.appendChild(th0);
+
+        for (const ag of state.agents) {
+          const th = document.createElement('th');
+          th.style.textAlign = 'center';
+          th.textContent = `@${ag.id}`;
+          htr.appendChild(th);
+        }
+        thead.appendChild(htr);
+        tbl.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        for (const sk of state.skills) {
+          const row = document.createElement('tr');
+          const tdName = document.createElement('td');
+          tdName.style.cursor = 'pointer';
+          tdName.innerHTML = `<div style="font-family:var(--mono);font-weight:600;color:var(--primary);">${sk.name} ✏️</div><div style="font-size:11px;color:var(--fg-muted);">${sk.source}</div>`;
+          tdName.onclick = () => {
+            state.expandedSkill = sk.name;
+            state.cat = 'all';
+            document.querySelectorAll('.cat-pill').forEach((b) => b.classList.toggle('active', b.getAttribute('data-cat') === 'all'));
+            $('f-skill-search').value = sk.name;
+            document.querySelector('.tab[data-tab="profile"]').click();
+            renderSkillsList();
+          };
+          row.appendChild(tdName);
+
+          for (const ag of state.agents) {
+            const td = document.createElement('td');
+            td.className = 'cell-toggle';
+            const has = (ag.skills || []).includes(sk.name);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'matrix-btn' + (has ? ' on' : '');
+            btn.textContent = '✓';
+            btn.onclick = () => {
+              const set = new Set(ag.skills || []);
+              if (set.has(sk.name)) set.delete(sk.name);
+              else set.add(sk.name);
+              ag.skills = [...set];
+              renderRoster();
+              renderSkillsList();
+              renderMatrix();
+            };
+            td.appendChild(btn);
+            row.appendChild(td);
+          }
+          tbody.appendChild(row);
+        }
+        tbl.appendChild(tbody);
+      }
+
+      function renderAll() {
+        applyStaticTranslations();
+        if (state.latestSwarm) {
+          $('swarm-pill').style.display = 'inline-flex';
+          $('swarm-pill-text').textContent = state.latestSwarm.title;
+        } else {
+          $('swarm-pill').style.display = 'none';
+        }
+        renderRoster();
+        renderProfile();
+        renderPresetsBar();
+        renderSkillsList();
+        renderMatrix();
+      }
+
+      async function loadState() {
+        const conv = currentConvId();
+        const res = await apiGet(`/api/state?conversationId=${encodeURIComponent(conv)}`);
+        if (!res || !res.ok) return;
+        state.skills = res.skills || [];
+        state.agents = res.agents || [];
+        state.latestSwarm = res.latestSwarm || null;
+        if (res.settings?.lang) state.lang = res.settings.lang;
+        if (Array.isArray(res.presets) && res.presets.length > 0) {
+          state.presets = res.presets;
+        }
+        if (!state.selectedId || !state.agents.some((a) => a.id === state.selectedId)) {
+          state.selectedId = state.agents[0]?.id || null;
+        }
+        renderAll();
+      }
+
+      // Language switcher
+      document.querySelectorAll('.lang-btn').forEach((btn) => {
+        btn.onclick = async () => {
+          syncInputsToState();
+          const newLang = btn.getAttribute('data-lang') || 'ru';
+          state.lang = newLang;
+          renderAll();
+          await apiGet(`/api/save-settings?payload=${encodeURIComponent(toBase64({ lang: newLang }))}`);
+        };
+      });
+
+      $('btn-delete-agent').onclick = () => {
+        const tr = t();
+        const ag = currentAgent();
+        if (!ag) return;
+        askConfirm({
+          title: tr.confirmDelAgentTitle(ag.id),
+          body: tr.confirmDelAgentBody(ag.id),
+          onConfirm: async () => {
+            const deletedId = ag.id;
+            const res = await apiGet(`/api/delete-agent?payload=${encodeURIComponent(toBase64({ id: deletedId, path: ag.path }))}`);
+            state.agents = state.agents.filter((a) => a.id !== deletedId);
+            state.selectedId = state.agents[0]?.id || null;
+            renderAll();
+            if (res && res.ok) {
+              toast(tr.toastAgentDeleted(deletedId));
+              await loadState();
+            }
+          }
+        });
+      };
+
+      document.querySelectorAll('.tab').forEach((btn) => {
+        btn.onclick = () => {
+          document.querySelectorAll('.tab').forEach((b) => b.classList.remove('active'));
+          document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('active'));
+          btn.classList.add('active');
+          const tabId = btn.getAttribute('data-tab');
+          $(`panel-${tabId}`).classList.add('active');
+        };
+      });
+
+      document.querySelectorAll('.cat-pill').forEach((btn) => {
+        btn.onclick = () => {
+          document.querySelectorAll('.cat-pill').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          state.cat = btn.getAttribute('data-cat') || 'all';
+          renderSkillsList();
+        };
+      });
+
+      $('f-skill-search').oninput = () => renderSkillsList();
+
+      $('btn-clear-skills').onclick = () => {
+        const ag = currentAgent();
+        if (!ag) return;
+        ag.skills = [];
+        renderAll();
+      };
+
+      $('btn-add-agent').onclick = () => {
+        syncInputsToState();
+        const id = `agent-${state.agents.length + 1}`;
+        state.agents.push({
+          id,
+          name: `studio-${id}`,
+          roleTitle: '',
+          model: 'gemini-3.8-flash-medium',
+          tools: ['read_file', 'write_file', 'run_command'],
+          skills: [],
+          persona: '',
+          source: '🌍 Template',
+          scopeType: 'global_template',
+          canDelete: true
+        });
+        state.selectedId = id;
+        renderAll();
+        $('f-id').focus();
+        $('f-id').select();
+      };
+
+      $('btn-save').onclick = async () => {
+        const tr = t();
+        syncInputsToState();
+        const ag = currentAgent();
+        if (!ag) return;
+        if (typeof state.activeSkillGetter === 'function') {
+          const skPayload = toBase64(state.activeSkillGetter());
+          await apiGet(`/api/save-skill?payload=${encodeURIComponent(skPayload)}`);
+        }
+        const payload = toBase64(ag);
+        await apiGet(`/api/save-agent?payload=${encodeURIComponent(payload)}`);
+        toast(tr.toastAgentSaved(ag.id, ag.skills.length));
+        await loadState();
+      };
+
+      $('btn-copy-cmd').onclick = () => {
+        const tr = t();
+        syncInputsToState();
+        const ag = currentAgent();
+        if (!ag) return;
+        const sk = ag.skills?.length ? ` Skills: ${ag.skills.join(', ')}.` : '';
+        const text = `@${ag.id} (${ag.model}): ${ag.persona}${sk}`;
+        navigator.clipboard?.writeText(text).catch(() => {});
+        toast(tr.toastCopied);
+      };
+
+      $('btn-create-skill').onclick = async () => {
+        const tr = t();
+        const name = $('ns-name').value.trim();
+        const description = $('ns-desc').value.trim();
+        const instructions = $('ns-body').value.trim();
+        const res = await apiGet(`/api/create-skill?payload=${encodeURIComponent(toBase64({ name, description, instructions }))}`);
+        if (res && res.ok) {
+          $('ns-name').value = '';
+          $('ns-desc').value = '';
+          $('ns-body').value = '';
+          const ag = currentAgent();
+          if (ag && !ag.skills.includes(res.name)) ag.skills.push(res.name);
+          await loadState();
+          document.querySelector('.tab[data-tab="profile"]').click();
+          toast(tr.toastSkillCreated(res.name, ag?.id));
+        }
+      };
+
+      $('btn-reload').onclick = () => {
+        loadState();
+        toast(t().toastSynced);
+      };
+
+      loadState();
+    })();
+  </script>
+</body>
+</html>
